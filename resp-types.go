@@ -10,10 +10,11 @@ type JSONLResponse struct {
 	HasJSONLs bool `json:"has-jsonls"`
 }
 
+type FnCollectJSONLs func(res json.RawMessage, jsonls <-chan interface{})
 type JSONLClientResponse struct {
 	JSONLResponse
 	Result json.RawMessage `json:"result"`
-	CollectJSONLs func(jsonls <-chan interface{}) `json:"-"`
+	CollectJSONLs FnCollectJSONLs `json:"-"`
 }
 
 type JSONLServerResponse struct {

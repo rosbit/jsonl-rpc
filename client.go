@@ -55,19 +55,22 @@ func (c *clientCodec) ReadResponseBody(x any) error {
 	if !resp.HasJSONLs {
 		return nil
 	}
-	rows := make(chan interface{})
-	go resp.CollectJSONLs(rows)
+
+	jsonls := make(chan interface{})
+	go resp.CollectJSONLs(resp.Result, jsonls) // return the result in advance
+
+	// all the JSONL must be be read in the current goruntine
 	for {
-		var row interface{}
-		if err := c.dec.Decode(&row); err != nil {
+		var jsonl interface{}
+		if err := c.dec.Decode(&jsonl); err != nil {
 			break
 		}
-		if row == nil {
+		if jsonl == nil {
 			break
 		}
-		rows <- row
+		jsonls <- jsonl
 	}
-	close(rows)
+	close(jsonls)
 
 	return nil
 }
