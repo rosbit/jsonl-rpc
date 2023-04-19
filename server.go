@@ -22,12 +22,6 @@ func NewServerCodec(conn io.ReadWriteCloser) rpc.ServerCodec {
 	}
 }
 
-type serverResponse struct {
-	Id     *json.RawMessage `json:"id"`
-	Result any              `json:"result"`
-	Error  any              `json:"error"`
-}
-
 func (c *serverCodec) ReadRequestHeader(r *rpc.Request) error {
 	var req rpc.Request
 	if err := c.dec.Decode(&req); err != nil {
