@@ -1,11 +1,15 @@
 package jsonlrpc
 
 import (
+	"github.com/gorilla/websocket"
 	"encoding/json"
+	"time"
 	"fmt"
 	"io"
+	"os"
 	"net"
 	"net/rpc"
+	"net/http"
 )
 
 type clientCodec struct {
@@ -90,6 +94,22 @@ func Dial(network, address string) (*rpc.Client, error) {
 	conn, err := net.Dial(network, address)
 	if err != nil {
 		return nil, err
+	}
+
+	websocketEndpoint := os.Getenv("WEBSOCKET_ENDPOINT")
+	if len(websocketEndpoint) > 0 {
+		url := fmt.Sprintf("ws://%s%s", address, websocketEndpoint)
+		wsDialer := &websocket.Dialer{
+			Proxy: http.ProxyFromEnvironment,
+			HandshakeTimeout: 45 * time.Second,
+			NetDial: func(_, _ string) (net.Conn, error) {
+				return conn, nil
+			},
+		}
+		if _, _, err = wsDialer.Dial(url, nil); err != nil {
+			conn.Close()
+			return nil, err
+		}
 	}
 	return NewClient(conn), err
 }
