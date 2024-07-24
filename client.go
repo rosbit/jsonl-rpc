@@ -64,9 +64,10 @@ func (c *clientCodec) ReadResponseBody(x any) error {
 	go resp.CollectJSONLs(resp.Result, jsonls) // return the result in advance
 
 	// all the JSONL must be be read in the current goruntine
+	var err error
 	for {
 		var jsonl interface{}
-		if err := c.dec.Decode(&jsonl); err != nil {
+		if err = c.dec.Decode(&jsonl); err != nil {
 			break
 		}
 		if jsonl == nil {
@@ -76,7 +77,7 @@ func (c *clientCodec) ReadResponseBody(x any) error {
 	}
 	close(jsonls)
 
-	return nil
+	return err
 }
 
 func (c *clientCodec) Close() error {
